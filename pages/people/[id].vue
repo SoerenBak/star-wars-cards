@@ -1,13 +1,17 @@
 <template>
-    <div class="container mx-auto py-10">
-      <NuxtLink to="/people" class="text-yellow-400 hover:underline mb-5 block">Back to Overview</NuxtLink>
-      <div v-if="error" class="text-red-500">{{ error }}</div>
-      <div v-else-if="isFetching" class="text-yellow">Loading...</div>
-      <div v-else-if="person" class="bg-black p-10 rounded-lg border-yellow-400 border-2 shadow-md text-yellow-400">
-        <h2 class="text-3xl font-bold mb-5">{{ person.name }}</h2>
-        <div class="grid grid-cols-2 gap-4">
+  <div>
+    <NuxtLink to="/people" class="text-yellow-400 hover:underline mb-5 block">Back to Overview</NuxtLink>
+    <div v-if="fetchError">
+      <span class="text-yellow-400">Error loading person</span>
+    </div>
+    <div v-else-if="isFetching">
+      <span class="text-yellow-400">Loading...</span>
+    </div>
+    <div v-else>
+      <div class="bg-black text-white border-yellow-400 border-2 rounded-xl p-5 text-center h-full w-full bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-50">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 class="text-xl font-semibold mb-2">General Information</h3>
+            <h2 class="text-white text-xl mb-2">Overview of {{ person.name }}</h2>
             <ul class="list-none list-inside">
               <li>Height: {{ person.height }} cm</li>
               <li>Mass: {{ person.mass }} kg</li>
@@ -19,66 +23,41 @@
             </ul>
           </div>
           <div>
-            <h3 class="text-xl font-semibold mb-2">Films</h3>
-            <ul class="list-disc list-inside">
+            <h3 class="text-xl mt-2 mb-2">Appears in:</h3>
+            <ul class="list-none list-inside">
               <li v-for="film in person.films" :key="film">{{ getFilmTitle(film) }}</li>
             </ul>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  
-  const route = useRoute();
-  const person = ref(null);
-  const error = ref(null);
-  const isFetching = ref(true);
-  
-  const fetchPerson = async () => {
-  console.log('Fetching person data for ID:', route.params.id);
-  isFetching.value = true;
-  
-  const { data, error: fetchError } = await useFetch(`https://swapi.dev/api/people/${route.params.id}/`);
+  </div>
+</template>
 
-  if (fetchError.value) {
-    console.log('Error fetching data:', fetchError.value);
-    error.value = fetchError.value;
-  } else {
-    console.log('Fetched data:', data.value);
-    person.value = data.value;
-  }
+<script setup>
 
-  isFetching.value = false;
-  console.log('Fetching complete');
-};
-  
-  watch(route, () => {
-    fetchPerson();
-  });
-  
-  onMounted(() => {
-    fetchPerson();
-  });
-  
-  const getFilmTitle = (url) => {
-    const filmId = url.split('/').slice(-2, -1)[0];
-    const filmTitles = {
-      1: 'A New Hope',
-      2: 'The Empire Strikes Back',
-      3: 'Return of the Jedi',
-      4: 'The Phantom Menace',
-      5: 'Attack of the Clones',
-      6: 'Revenge of the Sith',
-    };
-    return filmTitles[filmId] || 'Unknown Film';
+const route = useRoute()
+const { id } = route.params
+
+const { data: person, isFetching, error: fetchError } = await useFetch(`https://swapi.dev/api/people/${id}/`)
+
+const getFilmTitle = (url) => {
+  const filmId = url.split('/').slice(-2, -1)[0];
+  const filmTitles = {
+    1: 'A New Hope',
+    2: 'The Empire Strikes Back',
+    3: 'Return of the Jedi',
+    4: 'The Phantom Menace',
+    5: 'Attack of the Clones',
+    6: 'Revenge of the Sith',
   };
-  </script>
-  
-  <style scoped>
-  .container {
-    padding: 20px;
-  }
-  </style>
-  
+  return filmTitles[filmId] || 'Unknown Film';
+};
+
+</script>
+
+<style scoped>
+ul li {
+  color: #FACC15;
+}
+</style>
